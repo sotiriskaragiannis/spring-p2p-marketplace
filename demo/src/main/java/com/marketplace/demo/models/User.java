@@ -11,8 +11,8 @@ import jakarta.persistence.Table;
 public class User {
 
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	private Long id;
+	@GeneratedValue(strategy=GenerationType.UUID)
+	private String id;
 	private String username;
 	private String full_name;
 	private String email;
@@ -22,7 +22,7 @@ public class User {
 	private String city;
 	private String phone_number;
 	
-	public User(Long id, String username, String full_name, String email, String password, String bio, String country,
+	public User(String id, String username, String full_name, String email, String password, String bio, String country,
 			String city, String phone_number) {
 		this.id = id;
 		this.username = username;
@@ -51,11 +51,11 @@ public class User {
 		super();
 	}
 
-	public Long getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 

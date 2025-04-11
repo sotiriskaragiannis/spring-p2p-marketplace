@@ -5,7 +5,7 @@ package com.marketplace.demo.models.dto;
 public class UserStripped {
 
 
-	private Long id;
+	private String id;
 	private String username;
 	private String full_name;
 	private String email;
@@ -14,7 +14,7 @@ public class UserStripped {
 	private String city;
 	private String phone_number;
 	
-	public UserStripped(Long id, String username, String full_name, String email, String bio, String country,
+	public UserStripped(String id, String username, String full_name, String email, String bio, String country,
 			String city, String phone_number) {
 		this.id = id;
 		this.username = username;
@@ -26,11 +26,11 @@ public class UserStripped {
 		this.phone_number = phone_number;
 	}
 
-	public Long getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
