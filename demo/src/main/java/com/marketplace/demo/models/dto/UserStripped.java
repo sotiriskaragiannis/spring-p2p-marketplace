@@ -1,54 +1,29 @@
-package com.marketplace.demo.models;
+package com.marketplace.demo.models.dto;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+// Data Transfer Object for User
+// 		- Without password
+public class UserStripped {
 
-@Entity
-@Table(name="USERS")
-public class User {
 
-	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	private String username;
 	private String full_name;
 	private String email;
-	private String password;
 	private String bio;
 	private String country;
 	private String city;
 	private String phone_number;
 	
-	public User(Long id, String username, String full_name, String email, String password, String bio, String country,
+	public UserStripped(Long id, String username, String full_name, String email, String bio, String country,
 			String city, String phone_number) {
 		this.id = id;
 		this.username = username;
 		this.full_name = full_name;
 		this.email = email;
-		this.password = password;
 		this.bio = bio;
 		this.country = country;
 		this.city = city;
 		this.phone_number = phone_number;
-	}
-	
-	public User(String username, String full_name, String email, String password, String bio, String country,
-			String city, String phone_number) {
-		this.username = username;
-		this.full_name = full_name;
-		this.email = email;
-		this.password = password;
-		this.bio = bio;
-		this.country = country;
-		this.city = city;
-		this.phone_number = phone_number;
-	}
-
-	public User() {
-		super();
 	}
 
 	public Long getId() {
@@ -83,14 +58,6 @@ public class User {
 		this.email = email;
 	}
 
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
 	public String getBio() {
 		return bio;
 	}
@@ -122,8 +89,6 @@ public class User {
 	public void setPhone_number(String phone_number) {
 		this.phone_number = phone_number;
 	}
-	
-	
 	
 	
 }
