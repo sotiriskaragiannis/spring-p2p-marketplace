@@ -29,14 +29,14 @@ public class UserController {
 	public List<UserStripped> getAllUsers(){
 		List<User> list = userService.getAllUsers();
 		return list.stream()
-				.map(u -> new UserStripped(u.getId(), u.getUsername(), u.getFull_name(), u.getEmail(), u.getBio(), u.getCountry(), u.getCity(), u.getPhone_number()))
+				.map(u -> new UserStripped(u))
 				.collect(Collectors.toList());
 	}
 	
 	@GetMapping("/{user_id}")
 	public UserStripped getUser(@PathVariable("user_id") String user_id) {
 		User u = userService.getUser(user_id);
-		return new UserStripped(u.getId(), u.getUsername(), u.getFull_name(), u.getEmail(), u.getBio(), u.getCountry(), u.getCity(), u.getPhone_number());
+		return new UserStripped(u);
 	}
 	
 	@DeleteMapping("/{user_id}")
@@ -47,13 +47,13 @@ public class UserController {
 	@PostMapping("/")
 	public UserStripped createUser(@RequestBody User user) {
 		User u = userService.createUser(user);
-		return new UserStripped(u.getId(), u.getUsername(), u.getFull_name(), u.getEmail(), u.getBio(), u.getCountry(), u.getCity(), u.getPhone_number());
+		return new UserStripped(u);
 	}
 	
 	@PutMapping("/{user_id}")
 	public UserStripped updateUser(@PathVariable("user_id") String user_id, @RequestBody User userUpdates) {	
 		User u = userService.updateUser(user_id, userUpdates);
-		return new UserStripped(u.getId(), u.getUsername(), u.getFull_name(), u.getEmail(), u.getBio(), u.getCountry(), u.getCity(), u.getPhone_number());
+		return new UserStripped(u);
 	}
 
 }

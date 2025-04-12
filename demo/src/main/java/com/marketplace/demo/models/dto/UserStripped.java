@@ -1,5 +1,7 @@
 package com.marketplace.demo.models.dto;
 
+import com.marketplace.demo.models.User;
+
 // Data Transfer Object for User
 // 		- Without password
 public class UserStripped {
@@ -14,18 +16,18 @@ public class UserStripped {
 	private String city;
 	private String phone_number;
 	
-	public UserStripped(String id, String username, String full_name, String email, String bio, String country,
-			String city, String phone_number) {
-		this.id = id;
-		this.username = username;
-		this.full_name = full_name;
-		this.email = email;
-		this.bio = bio;
-		this.country = country;
-		this.city = city;
-		this.phone_number = phone_number;
+	
+	public UserStripped(User user) {
+		this.id = user.getId();
+		this.username = user.getUsername();
+		this.full_name = user.getFull_name();
+		this.email = user.getEmail();
+		this.bio = user.getBio();
+		this.country = user.getCountry();
+		this.city = user.getCity();
+		this.phone_number = user.getPhone_number();
 	}
-
+	
 	public String getId() {
 		return id;
 	}
