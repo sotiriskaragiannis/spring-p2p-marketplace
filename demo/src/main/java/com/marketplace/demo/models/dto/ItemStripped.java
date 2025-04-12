@@ -1,11 +1,14 @@
 package com.marketplace.demo.models.dto;
 
+import java.util.List;
+
+import com.marketplace.demo.models.Image;
 import com.marketplace.demo.models.Item;
 
 
 //Data Transfer Object for Item
 //	- Flattens seller and category
-//  - instead of seller(json object) and category(json object) in the result, 
+//  - instead of seller(JSON object) and category(JSON object) in the result, 
 //		the result has seller_id and category_id
 public class ItemStripped {
 
@@ -17,6 +20,7 @@ public class ItemStripped {
 	public String description;
 	public String itemCondition;
 	public boolean sold;
+	public List<Image> images;
 	
 	
 	public ItemStripped(Item item) {
@@ -28,6 +32,7 @@ public class ItemStripped {
 		this.description = item.getDescription();
 		this.itemCondition = item.getItemCondition();
 		this.sold = item.isSold();
+		this.images = item.getImages();
 	}
 
 	public String getId() {
@@ -92,6 +97,14 @@ public class ItemStripped {
 	
 	public void setSold(boolean sold) {
 		this.sold = sold;
+	}
+
+	public List<Image> getImages() {
+		return images;
+	}
+
+	public void setImages(List<Image> images) {
+		this.images = images;
 	}
 	
 }

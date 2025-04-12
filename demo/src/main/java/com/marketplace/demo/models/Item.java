@@ -1,12 +1,15 @@
 package com.marketplace.demo.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -20,13 +23,15 @@ public class Item {
 	@ManyToOne
 	@JoinColumn(name="category_id", referencedColumnName="id")
 	public Category category;
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(name="seller_id", referencedColumnName="id")
 	public User seller;
 	public double price;
 	public String description;
 	public String itemCondition;
 	public boolean sold;
+	@OneToMany(mappedBy="item")
+	public List<Image> images = new ArrayList<Image>();
 	
 	
 	public Item(String id, String title, Category category, User seller, double price, String description,
@@ -119,7 +124,21 @@ public class Item {
 	public void setSold(boolean sold) {
 		this.sold = sold;
 	}
+
+	public List<Image> getImages() {
+		return images;
+	}
+
+	public void setItemImages(List<Image> images) {
+		this.images = images;
+	}
 	
+	public void addImageToItem(Image image) {
+		this.images.add(image);
+	}
 	
+	public void removeImageFromItem(Image image) {
+		this.images.remove(image);
+	}
 
 }
