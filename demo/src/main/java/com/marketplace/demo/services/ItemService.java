@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.marketplace.demo.models.Item;
+import com.marketplace.demo.models.User;
 import com.marketplace.demo.repositories.ItemRepository;
 
 @Service
@@ -29,5 +30,9 @@ public class ItemService {
 		} else {			
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not Found");
 		}
+	}
+
+	public List<Item> getItemsOfUser(User u) {
+		return itemRepository.findBySeller(u);
 	}
 }

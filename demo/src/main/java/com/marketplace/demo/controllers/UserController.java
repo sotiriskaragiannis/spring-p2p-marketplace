@@ -13,8 +13,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.marketplace.demo.models.Item;
 import com.marketplace.demo.models.User;
+import com.marketplace.demo.models.dto.ItemStripped;
 import com.marketplace.demo.models.dto.UserStripped;
+import com.marketplace.demo.services.ItemService;
 import com.marketplace.demo.services.UserService;
 
 
@@ -24,6 +27,8 @@ public class UserController {
 	
 	@Autowired
 	UserService userService;
+	@Autowired
+	ItemService itemService;
 
 	@GetMapping("/")
 	public List<UserStripped> getAllUsers(){
@@ -37,6 +42,15 @@ public class UserController {
 	public UserStripped getUser(@PathVariable("user_id") String user_id) {
 		User u = userService.getUser(user_id);
 		return new UserStripped(u);
+	}
+	
+	@GetMapping("/{user_id}/items/")
+	public List<ItemStripped> getItemsOfUser(@PathVariable("user_id") String user_id){
+		User u = userService.getUser(user_id);
+		List<Item> list = itemService.getItemsOfUser(u);
+		return list.stream()
+				.map(i -> new ItemStripped(i))
+				.collect(Collectors.toList());
 	}
 	
 	@DeleteMapping("/{user_id}")
