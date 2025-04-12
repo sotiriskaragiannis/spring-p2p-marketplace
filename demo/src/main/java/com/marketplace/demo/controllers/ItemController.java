@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,5 +27,13 @@ public class ItemController {
 				.map(item -> new ItemStripped(item))
 				.collect(Collectors.toList());
 	}
+	
+	@GetMapping("/{item_id}")
+	public ItemStripped getItem(@PathVariable("item_id") String item_id) {
+		Item item = itemService.getItem(item_id);
+		return new ItemStripped(item);
+	}
+	
+	
 
 }

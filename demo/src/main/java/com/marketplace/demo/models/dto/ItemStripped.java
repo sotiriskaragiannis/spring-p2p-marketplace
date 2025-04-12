@@ -1,15 +1,7 @@
 package com.marketplace.demo.models.dto;
 
-import com.marketplace.demo.models.Category;
 import com.marketplace.demo.models.Item;
-import com.marketplace.demo.models.User;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 
 //Data Transfer Object for Item
 //	- Flattens seller and category
