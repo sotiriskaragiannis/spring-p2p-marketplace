@@ -35,4 +35,14 @@ public class ItemService {
 	public List<Item> getItemsOfUser(User u) {
 		return itemRepository.findBySeller(u);
 	}
+
+	public void removeItem(String item_id) {
+		Optional<Item> itemOptional = itemRepository.findById(item_id);
+		
+		if (itemOptional.isPresent()) {
+			itemRepository.deleteById(item_id);
+		} else {			
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not Found");
+		}
+	}
 }
