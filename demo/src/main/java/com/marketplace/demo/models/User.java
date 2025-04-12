@@ -1,9 +1,15 @@
 package com.marketplace.demo.models;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -21,7 +27,11 @@ public class User {
 	private String country;
 	private String city;
 	private String phone_number;
+	@OneToMany(mappedBy="seller", cascade=CascadeType.ALL)
+	@JsonIgnore
+	private List<Item> items;
 	
+
 	public User(String id, String username, String full_name, String email, String password, String bio, String country,
 			String city, String phone_number) {
 		this.id = id;
@@ -122,7 +132,13 @@ public class User {
 		this.phone_number = phone_number;
 	}
 	
-	
+	public List<Item> getItems() {
+		return items;
+	}
+
+	public void setItems(List<Item> items) {
+		this.items = items;
+	}
 	
 	
 }
