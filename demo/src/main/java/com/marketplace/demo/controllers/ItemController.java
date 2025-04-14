@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,6 +47,12 @@ public class ItemController {
 	@PostMapping("/")
 	public ItemStripped createItem(@RequestBody ItemInputDTO itemInput) {
 		Item item = itemService.createItem(itemInput);
+		return new ItemStripped(item);
+	}
+	
+	@PutMapping("/{item_id}")
+	public ItemStripped updateItem(@PathVariable("item_id") String item_id, @RequestBody ItemInputDTO itemInput) {
+		Item item = itemService.updateItem(item_id, itemInput);
 		return new ItemStripped(item);
 	}
 

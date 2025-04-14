@@ -9,10 +9,10 @@ public class ItemInputDTO {
 	public String title;
 	public String category_id;
 	public String seller_id;
-	public double price;
+	public Double price;
 	public String description;
 	public String itemCondition;
-	public boolean sold;
+	public Boolean sold;
 	
 	
 	public String getId() {
@@ -47,11 +47,11 @@ public class ItemInputDTO {
 		this.seller_id = seller_id;
 	}
 	
-	public double getPrice() {
+	public Double getPrice() {
 		return price;
 	}
 	
-	public void setPrice(double price) {
+	public void setPrice(Double price) {
 		this.price = price;
 	}
 	
@@ -71,11 +71,11 @@ public class ItemInputDTO {
 		this.itemCondition = itemCondition;
 	}
 	
-	public boolean isSold() {
+	public Boolean isSold() {
 		return sold;
 	}
 	
-	public void setSold(boolean sold) {
+	public void setSold(Boolean sold) {
 		this.sold = sold;
 	}
 	

@@ -93,4 +93,42 @@ public class ItemService {
 		
 		return newItem;
 	}
+
+	public Item updateItem(String item_id, ItemInputDTO itemInput) {
+		Optional<Item> itemOptional = itemRepository.findById(item_id);
+		if (itemOptional.isPresent()) {
+			Item item = itemOptional.get();
+			// Don't allow user to update the id of a record
+			if (itemInput.getId() != null && !item.getId().equals(itemInput.getId())) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The 'id' in the request body does not match the resource ID in the URL. The 'id' field cannot be modified.");
+			}
+			// Don't allow user to change the seller of item
+			if (itemInput.getSeller_id() != null && item.getSeller().getId().equals(itemInput.getSeller_id())) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot change the seller of an item.");
+			}
+			
+			// Update Category
+			if (itemInput.getCategory_id() != null) {
+				Optional<Category> categoryOptional = categoryRepository.findById(itemInput.getCategory_id()); 
+				if (!categoryOptional.isPresent()) {
+					throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not Found");
+				}
+				item.setCategory(categoryOptional.get());
+			}
+			
+			
+			// Update simple fields
+			if (itemInput.getTitle() != null) item.setTitle(itemInput.getTitle());
+			if (itemInput.getPrice() != null) item.setPrice(itemInput.getPrice());
+			if (itemInput.getDescription() != null) item.setDescription(itemInput.getDescription());
+			if (itemInput.getItemCondition() != null) item.setItemCondition(itemInput.getItemCondition());
+			if (itemInput.isSold() != null) item.setSold(itemInput.isSold());
+			
+			itemRepository.save(item);
+			
+			return item;
+		} else {			
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not Found");
+		}
+	}
 }
