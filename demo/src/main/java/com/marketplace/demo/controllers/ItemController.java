@@ -7,10 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.marketplace.demo.models.Item;
+import com.marketplace.demo.models.dto.ItemInputDTO;
 import com.marketplace.demo.models.dto.ItemStripped;
 import com.marketplace.demo.services.ItemService;
 
@@ -38,6 +41,12 @@ public class ItemController {
 	@DeleteMapping("{item_id}")
 	public void removeItem(@PathVariable("item_id") String item_id) {
 		itemService.removeItem(item_id);
+	}
+	
+	@PostMapping("/")
+	public ItemStripped createItem(@RequestBody ItemInputDTO itemInput) {
+		Item item = itemService.createItem(itemInput);
+		return new ItemStripped(item);
 	}
 
 }
