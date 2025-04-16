@@ -36,6 +36,10 @@ public class Image {
 		this.image_path = image_path;
 	}
 	
+	public Image(Item item) {
+		this.item = item;
+	}
+	
 	public Image() {
 		
 	}

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,7 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.marketplace.demo.models.Item;
 import com.marketplace.demo.models.dto.ItemInputDTO;
@@ -53,6 +56,12 @@ public class ItemController {
 	@PutMapping("/{item_id}")
 	public ItemStripped updateItem(@PathVariable("item_id") String item_id, @RequestBody ItemInputDTO itemInput) {
 		Item item = itemService.updateItem(item_id, itemInput);
+		return new ItemStripped(item);
+	}
+	
+	@PostMapping(path = "/{item_id}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ItemStripped uploadImageToItem(@PathVariable("item_id") String item_id, @RequestPart("image_file") MultipartFile image_file) {
+		Item item = itemService.uploadImageToItem(item_id, image_file);
 		return new ItemStripped(item);
 	}
 

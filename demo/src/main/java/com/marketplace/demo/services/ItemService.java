@@ -1,18 +1,26 @@
 package com.marketplace.demo.services;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.marketplace.demo.models.Category;
+import com.marketplace.demo.models.Image;
 import com.marketplace.demo.models.Item;
 import com.marketplace.demo.models.User;
 import com.marketplace.demo.models.dto.ItemInputDTO;
 import com.marketplace.demo.repositories.CategoryRepository;
+import com.marketplace.demo.repositories.ImageRepository;
 import com.marketplace.demo.repositories.ItemRepository;
 import com.marketplace.demo.repositories.UserRepository;
 
@@ -25,6 +33,11 @@ public class ItemService {
 	CategoryRepository categoryRepository;
 	@Autowired
 	UserRepository userRepository;
+	@Autowired
+	ImageRepository imageRepository;
+	
+	@Value("${images.upload-dir}")
+    private String uploadDir;
 
 	public List<Item> getAllItems() {
 		return itemRepository.findAll();
@@ -131,4 +144,55 @@ public class ItemService {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not Found");
 		}
 	}
+
+
+
+	public Item uploadImageToItem(String item_id, MultipartFile image_file) {
+	    Optional<Item> itemOptional = itemRepository.findById(item_id);
+	    if (!itemOptional.isPresent()) {
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not Found");
+	    }
+
+	    Item item = itemOptional.get();
+
+	    try {
+	        // Resolve the path relative to the project root
+	        String absolutePath = Paths.get(System.getProperty("user.dir"), uploadDir).toString();
+	        System.out.println("Resolved upload directory: " + absolutePath);
+
+	        // Create directory if it doesn't exist
+	        File dir = new File(absolutePath);
+	        if (!dir.exists()) {
+	            dir.mkdirs();
+	        }
+
+	        // Create image object and record
+	        Image image = new Image(item);
+	        
+	        // Save image record to get the id
+	        imageRepository.save(image);
+
+	        // Create a unique filename
+	        String filename = image.getId() + "_" + image_file.getOriginalFilename();
+
+	        // Full path to save the file
+	        Path filePath = Paths.get(absolutePath, filename);
+	        // Save file
+	        image_file.transferTo(filePath.toFile());
+
+	        image.setImage_path(filePath.toString());
+	        item.addImageToItem(image);
+	        
+	        imageRepository.save(image);
+	        itemRepository.save(item);
+	        return item;
+
+	    } catch (IOException e) {
+	        System.out.println("Failed to upload image: " + e.getMessage());
+	        e.printStackTrace();
+	        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload image", e);
+	    }
+	}
+
+
 }
