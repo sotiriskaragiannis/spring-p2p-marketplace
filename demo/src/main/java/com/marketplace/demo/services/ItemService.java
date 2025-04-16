@@ -2,6 +2,7 @@ package com.marketplace.demo.services;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -192,6 +193,39 @@ public class ItemService {
 	        e.printStackTrace();
 	        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload image", e);
 	    }
+	}
+
+	public Item removeImageFromItem(String item_id, String image_id) {
+		Optional<Item> itemOptional = itemRepository.findById(item_id);
+	    if (!itemOptional.isPresent()) {
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not Found");
+	    }
+	    Optional<Image> imageOptional = imageRepository.findById(image_id);
+	    if (!imageOptional.isPresent()) {
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Image not Found");
+	    }
+	    
+	    Item item = itemOptional.get();
+	    Image image = imageOptional.get();
+	    
+	    item.removeImageFromItem(image);
+	    
+	    // Delete image file from the file system
+	    String imagePath = image.getImage_path();
+	    if (imagePath != null && !imagePath.isEmpty()) {
+	        try {
+	            Path path = Paths.get(imagePath);
+	            Files.deleteIfExists(path); // Safely attempts to delete the file
+	        } catch (Exception e) {
+	            // Log the error but don't necessarily stop the process
+	            System.err.println("Failed to delete image file: " + e.getMessage());
+	        }
+	    }
+	    
+	    imageRepository.delete(image);
+	    itemRepository.save(item);
+	    
+		return item;
 	}
 
 

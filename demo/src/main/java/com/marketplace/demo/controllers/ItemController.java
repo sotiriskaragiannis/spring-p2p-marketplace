@@ -64,5 +64,11 @@ public class ItemController {
 		Item item = itemService.uploadImageToItem(item_id, image_file);
 		return new ItemStripped(item);
 	}
+	
+	@DeleteMapping("/{item_id}/images/{image_id}")
+	public ItemStripped removeImageFromItem(@PathVariable("item_id") String item_id, @PathVariable("image_id") String image_id) {
+		Item item = itemService.removeImageFromItem(item_id, image_id);
+		return new ItemStripped(item);
+	}
 
 }
