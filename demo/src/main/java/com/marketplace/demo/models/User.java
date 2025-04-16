@@ -9,6 +9,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
@@ -30,6 +31,10 @@ public class User {
 	@OneToMany(mappedBy="seller", cascade=CascadeType.ALL)
 	@JsonIgnore
 	private List<Item> items;
+	@OneToMany(mappedBy="reviewer", cascade=CascadeType.ALL)
+	private List<Review> writtenReviews;
+	@OneToMany(mappedBy="reviewee", cascade=CascadeType.ALL)
+	private List<Review> receivedReviews;
 	
 
 	public User(String id, String username, String full_name, String email, String password, String bio, String country,
@@ -139,6 +144,36 @@ public class User {
 	public void setItems(List<Item> items) {
 		this.items = items;
 	}
+
+	public List<Review> getWrittenReviews() {
+		return writtenReviews;
+	}
+
+	public void setWrittenReviews(List<Review> writtenReviews) {
+		this.writtenReviews = writtenReviews;
+	}
+
+	public List<Review> getReceivedReviews() {
+		return receivedReviews;
+	}
+
+	public void setReceivedReviews(List<Review> receivedReviews) {
+		this.receivedReviews = receivedReviews;
+	}
 	
+	public void addReviewToWrittenReviews(Review review) {
+		this.writtenReviews.add(review);
+	}
 	
+	public void removeReviewFromWrittenReviews(Review review) {
+		this.writtenReviews.remove(review);
+	}
+	
+	public void addReviewToRecivedReviews(Review review) {
+		this.receivedReviews.add(review);
+	}
+	
+	public void removeReviewFromReceivedReviews(Review review) {
+		this.receivedReviews.remove(review);
+	}
 }
