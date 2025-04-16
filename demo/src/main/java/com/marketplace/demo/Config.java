@@ -1,5 +1,8 @@
 package com.marketplace.demo;
 
+import java.nio.file.Paths;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +19,8 @@ import com.marketplace.demo.repositories.UserRepository;
 @Configuration
 public class Config {
 
+	@Value("${images.upload-dir}")
+    private String uploadDir;
 	
 	@Bean
 	public CommandLineRunner commandLineRunner(
@@ -44,17 +49,19 @@ public class Config {
 			Item item3 = new Item("CRT display", c1, u1, 50.0, null, "Used", false);
 			itemRepository.save(item3);
 			
-			Image image1_1 = new Image(item1, "/images/test.jpg");
+			String basePath = Paths.get(System.getProperty("user.dir"), uploadDir).toString();
+			
+			Image image1_1 = new Image(item1, basePath + "/test.jpg");
 			imageRepository.save(image1_1);
 			
-			Image image1_2 = new Image(item1, "/images/test2.jpg");
+			Image image1_2 = new Image(item1, basePath + "/test2.jpg");
 			imageRepository.save(image1_2);
 			
 			item1.addImageToItem(image1_1);
 			item1.addImageToItem(image1_2);
 			itemRepository.save(item1);
 
-			Image image2_1 = new Image(item2, "/images/test3.jpg");
+			Image image2_1 = new Image(item2, basePath + "/test3.jpg");
 			imageRepository.save(image2_1);
 			
 			item2.addImageToItem(image2_1);
