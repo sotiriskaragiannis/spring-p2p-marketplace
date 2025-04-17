@@ -1,5 +1,6 @@
 package com.marketplace.demo.models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -9,7 +10,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
@@ -32,9 +32,9 @@ public class User {
 	@JsonIgnore
 	private List<Item> items;
 	@OneToMany(mappedBy="reviewer", cascade=CascadeType.ALL)
-	private List<Review> writtenReviews;
+	private List<Review> writtenReviews = new ArrayList<Review>();;
 	@OneToMany(mappedBy="reviewee", cascade=CascadeType.ALL)
-	private List<Review> receivedReviews;
+	private List<Review> receivedReviews = new ArrayList<Review>();;
 	
 
 	public User(String id, String username, String full_name, String email, String password, String bio, String country,
