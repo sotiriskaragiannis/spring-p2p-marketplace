@@ -7,10 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.marketplace.demo.models.Review;
+import com.marketplace.demo.models.dto.ReviewInputDTO;
 import com.marketplace.demo.models.dto.ReviewStripped;
 import com.marketplace.demo.services.ReviewService;
 
@@ -38,6 +41,12 @@ public class ReviewController {
 	@DeleteMapping("/{review_id}")
 	public void removeReview(@PathVariable("review_id") String review_id) {
 		reviewService.removeReview(review_id);
+	}
+	
+	@PostMapping("/")
+	public ReviewStripped createReview(@RequestBody ReviewInputDTO reviewInput) {
+		Review review = reviewService.createReview(reviewInput);
+		return new ReviewStripped(review);
 	}
 
 }

@@ -79,10 +79,10 @@ public class Config {
 			reviewRepository.save(review2);
 			
 			u1.addReviewToWrittenReviews(review1);
-			u2.addReviewToRecivedReviews(review1);
+			u2.addReviewToReceivedReviews(review1);
 			
 			u3.addReviewToWrittenReviews(review2);
-			u1.addReviewToRecivedReviews(review2);
+			u1.addReviewToReceivedReviews(review2);
 			
 			userRepository.save(u1);
 			userRepository.save(u2);

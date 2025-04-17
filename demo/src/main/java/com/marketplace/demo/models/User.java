@@ -169,7 +169,7 @@ public class User {
 		this.writtenReviews.remove(review);
 	}
 	
-	public void addReviewToRecivedReviews(Review review) {
+	public void addReviewToReceivedReviews(Review review) {
 		this.receivedReviews.add(review);
 	}
 	
