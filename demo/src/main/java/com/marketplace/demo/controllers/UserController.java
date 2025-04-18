@@ -14,10 +14,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.marketplace.demo.models.Item;
+import com.marketplace.demo.models.Review;
 import com.marketplace.demo.models.User;
 import com.marketplace.demo.models.dto.ItemStripped;
+import com.marketplace.demo.models.dto.ReviewStripped;
 import com.marketplace.demo.models.dto.UserStripped;
 import com.marketplace.demo.services.ItemService;
+import com.marketplace.demo.services.ReviewService;
 import com.marketplace.demo.services.UserService;
 
 
@@ -29,6 +32,8 @@ public class UserController {
 	UserService userService;
 	@Autowired
 	ItemService itemService;
+	@Autowired
+	ReviewService reviewService;
 
 	@GetMapping("/")
 	public List<UserStripped> getAllUsers(){
@@ -68,6 +73,24 @@ public class UserController {
 	public UserStripped updateUser(@PathVariable("user_id") String user_id, @RequestBody User userUpdates) {	
 		User u = userService.updateUser(user_id, userUpdates);
 		return new UserStripped(u);
+	}
+	
+	@GetMapping("/{user_id}/writtenReviews/")
+	public List<ReviewStripped> getWrittenReviewsOfUser(@PathVariable("user_id") String user_id){
+		User u = userService.getUser(user_id);
+		List<Review> list = reviewService.getWrittenReviewsOfUser(u);
+		return list.stream()
+				.map(r -> new ReviewStripped(r))
+				.collect(Collectors.toList());
+	}
+	
+	@GetMapping("/{user_id}/receivedReviews/")
+	public List<ReviewStripped> getReceivedReviewsOfUser(@PathVariable("user_id") String user_id){
+		User u = userService.getUser(user_id);
+		List<Review> list = reviewService.getReceivedReviewsOfUser(u);
+		return list.stream()
+				.map(r -> new ReviewStripped(r))
+				.collect(Collectors.toList());
 	}
 
 }

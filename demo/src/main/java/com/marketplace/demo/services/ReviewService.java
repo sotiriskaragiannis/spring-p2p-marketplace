@@ -104,5 +104,13 @@ public class ReviewService {
 		
 		return review;
 	}
+
+	public List<Review> getWrittenReviewsOfUser(User u) {
+		return u.getWrittenReviews();
+	}
+
+	public List<Review> getReceivedReviewsOfUser(User u) {
+		return u.getReceivedReviews();
+	}
 	
 }
