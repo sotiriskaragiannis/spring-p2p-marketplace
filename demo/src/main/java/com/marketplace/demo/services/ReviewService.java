@@ -77,5 +77,32 @@ public class ReviewService {
 		
 		return review;
 	}
+
+	@Transactional
+	public Review updateReview(String review_id, ReviewInputDTO reviewInput) {
+		Optional<Review> reviewOptional = reviewRepository.findById(review_id);
+		
+		if (!reviewOptional.isPresent()) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not Found");
+
+		}
+		
+		Review review = reviewOptional.get();
+		
+		if (reviewInput.getReviewee_id()!=null && !reviewInput.getReviewee_id().equals(review.getReviewee().getId())) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot change the reviewee of the review!");
+		}
+		
+		if (reviewInput.getReviewer_id()!=null && !reviewInput.getReviewer_id().equals(review.getReviewer().getId())) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot change the reviewer of the review!");
+		}
+		
+		
+		if (reviewInput.getRating() != null) review.setRating(reviewInput.getRating());
+		if (reviewInput.getComment() != null) review.setComment(reviewInput.getComment());
+		if (reviewInput.getDate() != null) review.setDate(reviewInput.getDate());
+		
+		return review;
+	}
 	
 }
