@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.marketplace.demo.models.Item;
 import com.marketplace.demo.models.User;
 import com.marketplace.demo.repositories.UserRepository;
 
@@ -79,6 +80,32 @@ public class UserService {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not Found");
 		}
 		
+	}
+	@Transactional
+	public void addItemToUserFavorites(User u, Item i) {
+		if (!u.isItemInUserItems(i)) {			 // checks if item is not in user's items 
+			if (!u.isItemInFavorites(i) ) {		// checks if item is not already in user's favorites to eliminate duplicates
+				u.addFavoriteItem(i);
+				i.incrementFavoriteCount();
+			}
+		} else {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot set item of user as his favorite");
+		}
+	}
+
+	@Transactional
+	public void removeItemFromUserFavorites(User u, Item i) {
+		if (u.isItemInFavorites(i)) {			
+			u.removeFavoriteItem(i);
+			i.decrementFavoriteCount();
+		} else {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Item is not in User's favorite items");
+		}
+	}
+
+	@Transactional
+	public List<Item> getUserFavorites(User u) {
+		return u.getFavoriteItems();
 	}
 
 }

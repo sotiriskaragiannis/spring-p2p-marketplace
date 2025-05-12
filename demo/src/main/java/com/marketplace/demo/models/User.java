@@ -10,8 +10,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.JoinColumn;
 
 @Entity
 @Table(name="USERS")
@@ -32,9 +35,17 @@ public class User {
 	@JsonIgnore
 	private List<Item> items;
 	@OneToMany(mappedBy="reviewer", cascade=CascadeType.ALL)
-	private List<Review> writtenReviews = new ArrayList<Review>();;
+	private List<Review> writtenReviews = new ArrayList<Review>();
 	@OneToMany(mappedBy="reviewee", cascade=CascadeType.ALL)
-	private List<Review> receivedReviews = new ArrayList<Review>();;
+	private List<Review> receivedReviews = new ArrayList<Review>();
+	@ManyToMany
+	@JoinTable(
+	    name = "FAVORITES",
+	    joinColumns = @JoinColumn(name = "user_id"),
+	    inverseJoinColumns = @JoinColumn(name = "item_id")
+	)
+	@JsonIgnore
+	private List<Item> favoriteItems = new ArrayList<>();
 	
 
 	public User(String id, String username, String full_name, String email, String password, String bio, String country,
@@ -175,5 +186,31 @@ public class User {
 	
 	public void removeReviewFromReceivedReviews(Review review) {
 		this.receivedReviews.remove(review);
+	}
+	
+	public List<Item> getFavoriteItems() {
+	    return favoriteItems;
+	}
+
+	public void setFavoriteItems(List<Item> favoriteItems) {
+	    this.favoriteItems = favoriteItems;
+	}
+
+	public void addFavoriteItem(Item item) {
+	    this.favoriteItems.add(item);
+	}
+
+	public void removeFavoriteItem(Item item) {
+	    this.favoriteItems.remove(item);
+	}
+	
+	public boolean isItemInFavorites(Item item) {
+	    return this.favoriteItems.stream()
+	            .anyMatch(favItem -> favItem.getId().equals(item.getId()));
+	}
+	
+	public boolean isItemInUserItems(Item item) {
+	    return this.items.stream()
+	            .anyMatch(userItem -> userItem.getId().equals(item.getId()));
 	}
 }

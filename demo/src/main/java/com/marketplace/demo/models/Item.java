@@ -33,6 +33,7 @@ public class Item {
 	public boolean sold;
 	@OneToMany(mappedBy="item", cascade=CascadeType.ALL)
 	public List<Image> images = new ArrayList<Image>();
+	private int favoriteCount = 0;	
 	
 	
 	public Item(String id, String title, Category category, User seller, double price, String description,
@@ -140,6 +141,24 @@ public class Item {
 	
 	public void removeImageFromItem(Image image) {
 		this.images.remove(image);
+	}
+	
+	public int getFavoriteCount() {
+	    return favoriteCount;
+	}
+
+	public void setFavoriteCount(int favoriteCount) {
+	    this.favoriteCount = favoriteCount;
+	}
+
+	public void incrementFavoriteCount() {
+	    this.favoriteCount++;
+	}
+
+	public void decrementFavoriteCount() {
+	    if (this.favoriteCount > 0) {
+	        this.favoriteCount--;
+	    }
 	}
 
 }

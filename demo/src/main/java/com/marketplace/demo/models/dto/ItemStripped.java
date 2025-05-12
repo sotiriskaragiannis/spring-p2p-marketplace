@@ -21,6 +21,7 @@ public class ItemStripped {
 	public String itemCondition;
 	public boolean sold;
 	public List<Image> images;
+	public int favoriteCount;
 	
 	
 	public ItemStripped(Item item) {
@@ -33,6 +34,7 @@ public class ItemStripped {
 		this.itemCondition = item.getItemCondition();
 		this.sold = item.isSold();
 		this.images = item.getImages();
+		this.favoriteCount = item.getFavoriteCount();
 	}
 
 	public String getId() {

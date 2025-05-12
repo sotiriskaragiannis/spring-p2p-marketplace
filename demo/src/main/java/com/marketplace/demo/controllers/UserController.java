@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.marketplace.demo.models.Item;
@@ -90,6 +91,29 @@ public class UserController {
 		List<Review> list = reviewService.getReceivedReviewsOfUser(u);
 		return list.stream()
 				.map(r -> new ReviewStripped(r))
+				.collect(Collectors.toList());
+	}
+	
+	@PostMapping("/{user_id}/favoriteItems/")
+	public void addItemToUserFavorites(@PathVariable("user_id") String user_id, @RequestParam String item_id) {
+		User u = userService.getUser(user_id);
+		Item i = itemService.getItem(item_id);
+		userService.addItemToUserFavorites(u, i);
+	}
+	
+	@DeleteMapping("/{user_id}/favoriteItems/")
+	public void removeItemFromUserFavorites(@PathVariable("user_id") String user_id, @RequestParam String item_id) {
+		User u = userService.getUser(user_id);
+		Item i = itemService.getItem(item_id);
+		userService.removeItemFromUserFavorites(u, i);
+	}
+	
+	@GetMapping("/{user_id}/favoriteItems/")
+	public List<ItemStripped> getUserFavorites(@PathVariable("user_id") String user_id) {
+		User u = userService.getUser(user_id);
+		List<Item> list = userService.getUserFavorites(u);
+		return list.stream()
+				.map(i -> new ItemStripped(i))
 				.collect(Collectors.toList());
 	}
 
