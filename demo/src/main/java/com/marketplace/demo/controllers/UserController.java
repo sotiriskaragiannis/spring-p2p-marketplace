@@ -19,6 +19,7 @@ import com.marketplace.demo.models.Review;
 import com.marketplace.demo.models.User;
 import com.marketplace.demo.models.dto.ItemStripped;
 import com.marketplace.demo.models.dto.ReviewStripped;
+import com.marketplace.demo.models.dto.UserInputDTO;
 import com.marketplace.demo.models.dto.UserStripped;
 import com.marketplace.demo.services.ItemService;
 import com.marketplace.demo.services.ReviewService;
@@ -65,14 +66,14 @@ public class UserController {
 	}
 	
 	@PostMapping("/")
-	public UserStripped createUser(@RequestBody User user) {
-		User u = userService.createUser(user);
+	public UserStripped createUser(@RequestBody UserInputDTO userInput) {
+		User u = userService.createUser(userInput);
 		return new UserStripped(u);
 	}
 	
 	@PutMapping("/{user_id}")
-	public UserStripped updateUser(@PathVariable("user_id") String user_id, @RequestBody User userUpdates) {	
-		User u = userService.updateUser(user_id, userUpdates);
+	public UserStripped updateUser(@PathVariable("user_id") String user_id, @RequestBody UserInputDTO userUpdatesInput) {	
+		User u = userService.updateUser(user_id, userUpdatesInput);
 		return new UserStripped(u);
 	}
 	

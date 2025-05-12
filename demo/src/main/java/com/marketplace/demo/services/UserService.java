@@ -10,6 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.marketplace.demo.models.Item;
 import com.marketplace.demo.models.User;
+import com.marketplace.demo.models.dto.UserInputDTO;
 import com.marketplace.demo.repositories.UserRepository;
 
 import jakarta.transaction.Transactional;
@@ -47,33 +48,34 @@ public class UserService {
 		
 	}
 
-	public User createUser(User user) {
-		if (user.getId() != null) {
+	public User createUser(UserInputDTO userInput) {
+		if (userInput.getId() != null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The 'id' field must not be provided when creating a new resource.");
 		}
-		userRepository.save(user);
-		return user;
+		User u = new User(userInput);
+		userRepository.save(u);
+		return u;
 	}
 
 	@Transactional
-	public User updateUser(String user_id, User userUpdates) {
+	public User updateUser(String user_id, UserInputDTO userUpdatesInput) {
 		Optional<User> userOptional = userRepository.findById(user_id);
 		
 		if (userOptional.isPresent()) {
 			User user = userOptional.get();
 			// Don't allow user to update the id of a record
-			if (userUpdates.getId() != null && !user.getId().equals(userUpdates.getId())) {
+			if (userUpdatesInput.getId() != null && !user.getId().equals(userUpdatesInput.getId())) {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The 'id' in the request body does not match the resource ID in the URL. The 'id' field cannot be modified.");
 			}
 			
-			if (userUpdates.getUsername() != null) user.setUsername(userUpdates.getUsername());
-			if (userUpdates.getFull_name() != null) user.setFull_name(userUpdates.getFull_name());
-			if (userUpdates.getEmail() != null) user.setEmail(userUpdates.getEmail());
-			if (userUpdates.getPassword() != null) user.setPassword(userUpdates.getPassword());
-			if (userUpdates.getBio() != null) user.setBio(userUpdates.getPassword());
-			if (userUpdates.getCountry() != null) user.setCountry(userUpdates.getCountry());
-			if (userUpdates.getCity() != null) user.setCity(userUpdates.getCity());
-			if (userUpdates.getPhone_number() != null) user.setPhone_number(userUpdates.getPhone_number());
+			if (userUpdatesInput.getUsername() != null) user.setUsername(userUpdatesInput.getUsername());
+			if (userUpdatesInput.getFull_name() != null) user.setFull_name(userUpdatesInput.getFull_name());
+			if (userUpdatesInput.getEmail() != null) user.setEmail(userUpdatesInput.getEmail());
+			if (userUpdatesInput.getPassword() != null) user.setPassword(userUpdatesInput.getPassword());
+			if (userUpdatesInput.getBio() != null) user.setBio(userUpdatesInput.getPassword());
+			if (userUpdatesInput.getCountry() != null) user.setCountry(userUpdatesInput.getCountry());
+			if (userUpdatesInput.getCity() != null) user.setCity(userUpdatesInput.getCity());
+			if (userUpdatesInput.getPhone_number() != null) user.setPhone_number(userUpdatesInput.getPhone_number());
 			
 			return user;
 		} else {			

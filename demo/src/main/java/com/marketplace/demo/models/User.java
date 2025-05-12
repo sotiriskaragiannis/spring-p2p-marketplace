@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.marketplace.demo.models.dto.UserInputDTO;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -73,8 +74,20 @@ public class User {
 		this.phone_number = phone_number;
 	}
 
+	public User(UserInputDTO userInput) {
+		this.username = userInput.getUsername();
+		this.full_name = userInput.getFull_name();
+		this.email = userInput.getEmail();
+		this.password = userInput.getPassword();
+		this.bio = userInput.getBio();
+		this.country = userInput.getCountry();
+		this.city = userInput.getCity();
+		this.phone_number = userInput.getPhone_number();
+	}
+	
 	public User() {
 	}
+
 
 	public String getId() {
 		return id;
