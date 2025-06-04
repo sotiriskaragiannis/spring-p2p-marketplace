@@ -163,3 +163,8 @@ $RECYCLE.BIN/
 
 
 # End of https://www.gitignore.io/api/git,java,maven,eclipse,windows
+
+
+demo/marketplace-ui/node_modules/
+.DS_Store
+.vscode/
