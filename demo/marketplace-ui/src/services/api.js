@@ -118,8 +118,9 @@ export const itemAPI = {
     
     return fetch(`${API_URL}/items/${itemId}/images`, {
       method: 'POST',
-      body: formData
-      // No headers for FormData
+      body: formData,
+      credentials: 'include'
+      // No Content-Type header for multipart/form-data
     }).then(response => {
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -168,15 +169,40 @@ export const categoryAPI = {
 
 // Image related API calls
 export const imageAPI = {
-  // Get image URL helper
-  getImageUrl: (imageId) => `${API_URL}/images/${imageId}`
+  // Get image URL (direct URL construction without fetch)
+  getImageUrl: (imageId) => `${API_URL}/images/${imageId}`,
+  
+  // Upload image to item (using FormData properly)
+  uploadImage: (itemId, imageFile) => {
+    const formData = new FormData();
+    formData.append('image_file', imageFile);
+    
+    return fetch(`${API_URL}/items/${itemId}/images`, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include'
+      // No Content-Type header for multipart/form-data
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+      return response.json();
+    });
+  },
+  
+  // Remove image from item
+  removeImage: (itemId, imageId) => fetchClient(`/items/${itemId}/images/${imageId}`, {
+    method: 'DELETE'
+  })
 };
 
 // Export a default API object with all services
-export default {
+const api = {
   user: userAPI,
   item: itemAPI,
   review: reviewAPI,
   category: categoryAPI,
   image: imageAPI
 };
+
+export default api;
