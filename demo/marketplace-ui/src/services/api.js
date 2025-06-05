@@ -51,8 +51,19 @@ export const userAPI = {
     body: JSON.stringify(credentials)
   }),
   
-  // Get user profile
-  getProfile: (userId) => fetchClient(`/users/${userId}`),
+  // Get user profile with better error handling
+  getProfile: async (userId) => {
+    try {
+      return await fetchClient(`/users/${userId}`);
+    } catch (err) {
+      console.error(`Error fetching profile for user ${userId}:`, err);
+      if (err.message.includes('404')) {
+        // Clear invalid user data
+        localStorage.removeItem('user');
+      }
+      throw err;
+    }
+  },
   
   // Update user profile
   updateProfile: (userId, userData) => fetchClient(`/users/${userId}`, {

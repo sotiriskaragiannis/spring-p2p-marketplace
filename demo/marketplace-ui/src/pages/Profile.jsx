@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
-const UserDashboard = () => {
+const Profile = () => {  // Changed component name to Profile
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [userItems, setUserItems] = useState([]);
@@ -11,6 +11,7 @@ const UserDashboard = () => {
   const [writtenReviews, setWrittenReviews] = useState([]);
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   useEffect(() => {
     // Check if user is logged in
@@ -20,35 +21,75 @@ const UserDashboard = () => {
       return;
     }
     
-    const userData = JSON.parse(storedUser);
-    setUser(userData);
+    let userData;
+    try {
+      userData = JSON.parse(storedUser);
+      if (!userData || !userData.id) {
+        throw new Error('Invalid user data');
+      }
+      setUser(userData);
+    } catch (err) {
+      console.error('Error parsing stored user data:', err);
+      localStorage.removeItem('user'); // Clear invalid data
+      navigate('/login');
+      return;
+    }
     
     // Fetch user data from API
     const fetchUserData = async () => {
       try {
         setLoading(true);
+        setError(null);
         
         // Fetch detailed user profile
-        const userProfile = await api.user.getProfile(userData.id);
-        setUser(prev => ({ ...prev, ...userProfile }));
+        try {
+          const userProfile = await api.user.getProfile(userData.id);
+          setUser(prev => ({ ...prev, ...userProfile }));
+        } catch (err) {
+          console.error('Error fetching user profile:', err);
+          setError('Could not load your profile. Please try logging in again.');
+          // Continue loading other data even if profile fetch fails
+        }
         
-        // Fetch user items
-        const items = await api.user.getUserItems(userData.id);
-        setUserItems(items);
+        // Fetch user items with error handling
+        try {
+          const items = await api.user.getUserItems(userData.id);
+          setUserItems(items);
+        } catch (err) {
+          console.error('Error fetching user items:', err);
+          // Set empty array if fetch fails
+          setUserItems([]);
+        }
         
-        // Fetch favorite items
-        const favorites = await api.user.getFavorites(userData.id);
-        setFavoriteItems(favorites);
+        // Fetch favorite items with error handling
+        try {
+          const favorites = await api.user.getFavorites(userData.id);
+          setFavoriteItems(favorites);
+        } catch (err) {
+          console.error('Error fetching favorites:', err);
+          setFavoriteItems([]);
+        }
         
-        // Fetch reviews
-        const received = await api.user.getReceivedReviews(userData.id);
-        setReceivedReviews(received);
+        // Fetch reviews with error handling
+        try {
+          const received = await api.user.getReceivedReviews(userData.id);
+          setReceivedReviews(received);
+        } catch (err) {
+          console.error('Error fetching received reviews:', err);
+          setReceivedReviews([]);
+        }
         
-        const written = await api.user.getWrittenReviews(userData.id);
-        setWrittenReviews(written);
+        try {
+          const written = await api.user.getWrittenReviews(userData.id);
+          setWrittenReviews(written);
+        } catch (err) {
+          console.error('Error fetching written reviews:', err);
+          setWrittenReviews([]);
+        }
         
       } catch (error) {
         console.error('Error fetching user data:', error);
+        setError('Failed to load user data. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -61,13 +102,25 @@ const UserDashboard = () => {
     return <div className="text-center my-5"><div className="spinner-border"></div></div>;
   }
   
+  if (error) {
+    return (
+      <div className="alert alert-danger">
+        <h4>Error</h4>
+        <p>{error}</p>
+        <button className="btn btn-primary" onClick={() => navigate('/login')}>
+          Return to Login
+        </button>
+      </div>
+    );
+  }
+  
   if (!user) {
     return null; // Will redirect in useEffect
   }
 
   return (
     <div className="dashboard">
-      <h1 className="mb-4">Dashboard</h1>
+      <h1 className="mb-4">Your Profile</h1>
       
       <div className="row">
         {/* Sidebar */}
@@ -272,4 +325,4 @@ const UserDashboard = () => {
   );
 };
 
-export default UserDashboard;
+export default Profile; // Changed export name to match component
