@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import EditItemForm from './EditItemForm';
 import DeleteConfirmation from './DeleteConfirmation';
+import ReviewModal from './ReviewModal';
+import api from '../../services/api';
 
 const ItemDetail = ({ 
   item, 
@@ -14,6 +16,62 @@ const ItemDetail = ({
 }) => {
   const [editMode, setEditMode] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+
+  // Check if item is in user's favorites
+  React.useEffect(() => {
+    if (currentUser && currentUser.id) {
+      checkIfFavorited();
+    }
+  }, [currentUser, item]);
+
+  const checkIfFavorited = async () => {
+    try {
+      const favorites = await api.user.getFavorites(currentUser.id);
+      const isInFavorites = favorites.some(fav => fav.id === item.id);
+      setIsFavorited(isInFavorites);
+    } catch (error) {
+      console.error('Error checking favorites:', error);
+    }
+  };
+
+  const handleAddToFavorites = async () => {
+    if (!currentUser) {
+      alert('Please log in to add items to favorites');
+      return;
+    }
+
+    setFavoriteLoading(true);
+    try {
+      if (isFavorited) {
+        await api.user.removeFromFavorites(currentUser.id, item.id);
+        setIsFavorited(false);
+      } else {
+        await api.user.addToFavorites(currentUser.id, item.id);
+        setIsFavorited(true);
+      }
+    } catch (error) {
+      console.error('Error updating favorites:', error);
+      alert('Failed to update favorites. Please try again.');
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
+
+  const handleReviewProduct = () => {
+    if (!currentUser) {
+      alert('Please log in to review products');
+      return;
+    }
+    setShowReviewModal(true);
+  };
+
+  const handleReviewSubmitted = () => {
+    // Optionally refresh data or show success message
+    console.log('Review submitted successfully');
+  };
 
   const getSellerInfo = (sellerId) => {
     return sellerDetails[sellerId] || { username: 'Unknown', full_name: 'Unknown' };
@@ -109,8 +167,20 @@ const ItemDetail = ({
               
               {!item.sold && !isMyItem && (
                 <div className="d-grid gap-2">
-                  <button className="btn btn-primary">Contact Seller</button>
-                  <button className="btn btn-outline-primary">Add to Favorites</button>
+                  <button 
+                    className="btn btn-primary" 
+                    onClick={handleReviewProduct}
+                    disabled={!currentUser}
+                  >
+                    Review Product
+                  </button>
+                  <button 
+                    className="btn btn-outline-primary" 
+                    onClick={handleAddToFavorites}
+                    disabled={!currentUser || favoriteLoading}
+                  >
+                    {favoriteLoading ? 'Loading...' : (isFavorited ? 'Remove from Favorites' : 'Add to Favorites')}
+                  </button>
                 </div>
               )}
               
@@ -154,6 +224,34 @@ const ItemDetail = ({
           </div>
         </div>
       </div>
+      
+      {/* Edit Form */}
+      {editMode && (
+        <EditItemForm
+          item={item}
+          categories={categories}
+          onUpdate={onUpdate}
+          onCancel={() => setEditMode(false)}
+        />
+      )}
+      
+      {/* Delete Confirmation */}
+      {deleteConfirm && (
+        <DeleteConfirmation
+          item={item}
+          onConfirm={onDelete}
+          onCancel={() => setDeleteConfirm(false)}
+        />
+      )}
+      
+      {/* Review Modal */}
+      <ReviewModal
+        show={showReviewModal}
+        onHide={() => setShowReviewModal(false)}
+        item={item}
+        currentUser={currentUser}
+        onReviewSubmitted={handleReviewSubmitted}
+      />
     </div>
   );
 };

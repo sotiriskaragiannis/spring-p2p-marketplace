@@ -44,7 +44,7 @@ const Profile = () => {
       });
     } catch (err) {
       console.error('Error parsing stored user data:', err);
-      localStorage.removeItem('user');
+      localStorage.removeItem('user'); // Clear invalid data
       navigate('/login');
       return;
     }
@@ -191,16 +191,11 @@ const Profile = () => {
       localStorage.setItem('user', JSON.stringify({
         ...storedUser,
         username: updatedUser.username,
-        email: updatedUser.email,
-        full_name: updatedUser.full_name,
-        bio: updatedUser.bio, // Make sure bio is included
-        country: updatedUser.country,
-        city: updatedUser.city,
-        phone_number: updatedUser.phone_number
+        email: updatedUser.email
       }));
-      
-      // Update local state with ALL fields from the response
-      setUser(updatedUser); // Use the complete response instead of merging
+
+      // Update local state
+      setUser(prev => ({ ...prev, ...updatedUser }));
       setEditMode(false);
       
       alert('Profile updated successfully!');
@@ -236,7 +231,7 @@ const Profile = () => {
   }
   
   if (!user) {
-    return null; // Will redirect in useEffect
+    return null;
   }
 
   return (

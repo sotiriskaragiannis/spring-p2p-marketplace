@@ -72,7 +72,7 @@ public class UserService {
 			if (userUpdatesInput.getFull_name() != null) user.setFull_name(userUpdatesInput.getFull_name());
 			if (userUpdatesInput.getEmail() != null) user.setEmail(userUpdatesInput.getEmail());
 			if (userUpdatesInput.getPassword() != null) user.setPassword(userUpdatesInput.getPassword());
-			if (userUpdatesInput.getBio() != null) user.setBio(userUpdatesInput.getPassword());
+			if (userUpdatesInput.getBio() != null) user.setBio(userUpdatesInput.getBio());
 			if (userUpdatesInput.getCountry() != null) user.setCountry(userUpdatesInput.getCountry());
 			if (userUpdatesInput.getCity() != null) user.setCity(userUpdatesInput.getCity());
 			if (userUpdatesInput.getPhone_number() != null) user.setPhone_number(userUpdatesInput.getPhone_number());

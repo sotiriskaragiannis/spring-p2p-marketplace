@@ -35,20 +35,27 @@ const EditItemForm = ({ item, categories, onSave, onCancel }) => {
     
     try {
       // Update the item
-      await api.item.updateItem(item.id, formData);
+      const updatedItem = await api.item.updateItem(item.id, formData);
       
       // If there's a new image, upload it
       if (imageFile) {
         await api.item.uploadImage(item.id, imageFile);
+        
+        // Get the updated item with the new image
+        const fullItemWithImage = await api.item.getItem(item.id);
+        
+        // Pass the updated item with image back to parent component
+        onSave(fullItemWithImage);
+      } else {
+        // Pass the updated item back to parent component
+        onSave(updatedItem);
       }
       
-      // Notify parent of successful update
-      onSave();
+      setLoading(false); // Add this line to reset loading state on success
       
     } catch (err) {
       console.error('Error updating item:', err);
       setError('Failed to update item. Please try again.');
-    } finally {
       setLoading(false);
     }
   };

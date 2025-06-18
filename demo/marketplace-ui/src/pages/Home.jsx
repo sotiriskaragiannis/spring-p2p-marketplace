@@ -6,7 +6,7 @@ const Home = () => {
   return (
     <div className="home">
       <div className="jumbotron">
-        <h1 className="display-4">Welcome to P2P Marketplace</h1>
+        <h1 className="display-4">Welcome to the Marketplace</h1>
         <p className="lead">Buy and sell items directly with other users</p>
         <hr className="my-4" />
         <p>Browse available items or list your own items for sale.</p>

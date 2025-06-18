@@ -146,30 +146,37 @@ export const itemAPI = {
   })
 };
 
-// Keep the remaining API objects as they are
-export const reviewAPI = {
-  // Get all reviews
-  getAllReviews: () => fetchClient('/reviews/'),
+// Review related API calls
+const reviewAPI = {
+  createReview: (reviewData) => {
+    return fetchClient('/reviews/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(reviewData)
+    });
+  },
   
-  // Get review by ID
-  getReview: (reviewId) => fetchClient(`/reviews/${reviewId}`),
+  getReviewsByUser: (userId) => 
+    fetchClient(`/reviews/user/${userId}`),
   
-  // Create review
-  createReview: (reviewData) => fetchClient('/reviews/', {
-    method: 'POST',
-    body: JSON.stringify(reviewData)
-  }),
+  getReviewsForUser: (userId) => 
+    fetchClient(`/reviews/for-user/${userId}`),
   
-  // Update review
-  updateReview: (reviewId, reviewData) => fetchClient(`/reviews/${reviewId}`, {
-    method: 'PUT',
-    body: JSON.stringify(reviewData)
-  }),
+  updateReview: (reviewId, reviewData) => 
+    fetchClient(`/reviews/${reviewId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(reviewData)
+    }),
   
-  // Delete review
-  deleteReview: (reviewId) => fetchClient(`/reviews/${reviewId}`, {
-    method: 'DELETE'
-  })
+  deleteReview: (reviewId) => 
+    fetchClient(`/reviews/${reviewId}`, {
+      method: 'DELETE'
+    })
 };
 
 // Category related API calls
@@ -208,12 +215,10 @@ export const imageAPI = {
 };
 
 // Export a default API object with all services
-const api = {
+export default {
   user: userAPI,
   item: itemAPI,
-  review: reviewAPI,
   category: categoryAPI,
-  image: imageAPI
+  image: imageAPI,
+  review: reviewAPI  // Make sure this is included in the export
 };
-
-export default api;
