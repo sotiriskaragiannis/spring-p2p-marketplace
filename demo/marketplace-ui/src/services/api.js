@@ -37,18 +37,29 @@ const fetchClient = async (endpoint, options = {}) => {
   });
 };
 
+// Authentication related API calls
+export const authAPI = {
+  // Login user using proper auth endpoint
+  login: (credentials) => fetchClient('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({
+      username: credentials.username,
+      password: credentials.password
+    })
+  }),
+  
+  // Logout (if you implement it later)
+  logout: () => fetchClient('/auth/logout', {
+    method: 'POST'
+  })
+};
+
 // User related API calls
 export const userAPI = {
   // Register a new user
   register: (userData) => fetchClient('/users/', {
     method: 'POST',
     body: JSON.stringify(userData)
-  }),
-  
-  // Login user
-  login: (credentials) => fetchClient('/login', {
-    method: 'POST',
-    body: JSON.stringify(credentials)
   }),
   
   // Get user profile with better error handling
@@ -122,28 +133,93 @@ export const itemAPI = {
     method: 'DELETE'
   }),
   
-  // Upload image to item
-  uploadImage: (itemId, imageFile) => {
-    const formData = new FormData();
-    formData.append('image_file', imageFile);
+  // Upload image to item - FIXED TO MATCH JAVA BACKEND
+  uploadImage: async (itemId, file) => {
+    // Compress image if it's too large
+    const compressedFile = await compressImageIfNeeded(file);
     
-    return fetch(`${API_URL}/items/${itemId}/images`, {
-      method: 'POST',
-      body: formData,
-      credentials: 'include'
-      // No Content-Type header for multipart/form-data
-    }).then(response => {
+    const formData = new FormData();
+    formData.append('image_file', compressedFile); // Backend expects 'image_file'
+    
+    try {
+      const response = await fetch(`${API_URL}/items/${itemId}/images`, {
+        method: 'POST',
+        body: formData,
+        mode: 'cors',
+        credentials: 'include'
+        // Don't set Content-Type header - let browser set it for FormData
+      });
+      
       if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`Upload failed: ${response.status} - ${errorText}`);
       }
-      return response.json();
-    });
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Upload error:', error);
+      throw error;
+    }
   },
   
   // Remove image from item
   removeImage: (itemId, imageId) => fetchClient(`/items/${itemId}/images/${imageId}`, {
     method: 'DELETE'
   })
+};
+
+// Helper function to compress images if they're too large
+const compressImageIfNeeded = (file) => {
+  return new Promise((resolve) => {
+    const maxSize = 2 * 1024 * 1024; // 2MB limit
+    
+    if (file.size <= maxSize) {
+      resolve(file);
+      return;
+    }
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    img.onload = () => {
+      // Calculate new dimensions to reduce file size
+      const maxWidth = 1200;
+      const maxHeight = 1200;
+      let { width, height } = img;
+      
+      if (width > height) {
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = (width * maxHeight) / height;
+          height = maxHeight;
+        }
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      canvas.toBlob(
+        (blob) => {
+          const compressedFile = new File([blob], file.name, {
+            type: 'image/jpeg',
+            lastModified: Date.now(),
+          });
+          resolve(compressedFile);
+        },
+        'image/jpeg',
+        0.8 // Compression quality
+      );
+    };
+    
+    img.src = URL.createObjectURL(file);
+  });
 };
 
 // Review related API calls
@@ -186,29 +262,35 @@ export const categoryAPI = {
 };
 
 // Image related API calls
-export const imageAPI = {
-  // Get image URL (direct URL construction without fetch)
+const imageAPI = {
+  // Get image by ID
   getImageUrl: (imageId) => `${API_URL}/images/${imageId}`,
   
-  // Upload image to item (using FormData properly)
-  uploadImage: (itemId, imageFile) => {
+  // Upload image to item - CORRECTED TO MATCH JAVA BACKEND
+  uploadImage: async (itemId, file) => {
     const formData = new FormData();
-    formData.append('image_file', imageFile);
+    formData.append('image_file', file); // Backend expects 'image_file', not 'image'
     
-    return fetch(`${API_URL}/items/${itemId}/images`, {
-      method: 'POST',
-      body: formData,
-      credentials: 'include'
-      // No Content-Type header for multipart/form-data
-    }).then(response => {
+    try {
+      const response = await fetch(`${API_URL}/items/${itemId}/images`, {
+        method: 'POST',
+        body: formData,
+        // Don't set Content-Type header - let browser set it for FormData
+      });
+      
       if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`Upload failed: ${response.status} - ${errorText}`);
       }
-      return response.json();
-    });
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Upload error:', error);
+      throw error;
+    }
   },
   
-  // Remove image from item
+  // Remove image from item - CORRECTED TO MATCH JAVA BACKEND
   removeImage: (itemId, imageId) => fetchClient(`/items/${itemId}/images/${imageId}`, {
     method: 'DELETE'
   })
@@ -216,6 +298,7 @@ export const imageAPI = {
 
 // Export a default API object with all services
 export default {
+  auth: authAPI,
   user: userAPI,
   item: itemAPI,
   category: categoryAPI,

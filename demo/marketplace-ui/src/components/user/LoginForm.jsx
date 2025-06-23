@@ -5,7 +5,7 @@ import api from '../../services/api';
 const LoginForm = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: ''
   });
   const [error, setError] = useState('');
@@ -40,30 +40,30 @@ const LoginForm = () => {
     setLoading(true);
     
     try {
-      // First, get all users and find user by email
-      const users = await api.user.getAllUsers();
-      const user = users.find(u => u.email === formData.email);
+      // Use the proper authentication API
+      const loginResponse = await api.auth.login({
+        username: formData.username,
+        password: formData.password
+      });
       
-      if (!user) {
-        throw new Error('User not found');
+      // Check if login was successful
+      if (!loginResponse.success) {
+        throw new Error(loginResponse.message || 'Login failed');
       }
       
-      // For demo purposes: skip password check or compare in a way that matches backend format
-      // In a real app, the backend would handle authentication
-      
-      // Option 1: Skip password check for demo (INSECURE but works for demo)
-      // console.log("Found user:", user);
-      
-      // Option 2: For demo, check if password exists and continue
-      if (!user.password) {
-        console.warn("User password not available in API response - skipping check");
-      }
+      // Extract user data from the response
+      const user = loginResponse.user;
       
       // Login successful - store user info
       localStorage.setItem('user', JSON.stringify({
         id: user.id,
         username: user.username,
-        email: user.email
+        email: user.email,
+        full_name: user.full_name,
+        bio: user.bio,
+        country: user.country,
+        city: user.city,
+        phone_number: user.phone_number
       }));
       
       // Dispatch storage event to notify other components
@@ -79,7 +79,7 @@ const LoginForm = () => {
       
     } catch (err) {
       console.error('Login error:', err);
-      setError('Invalid credentials. Please try again.');
+      setError(err.message || 'Invalid credentials. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -92,13 +92,13 @@ const LoginForm = () => {
           {error && <div className="alert alert-danger">{error}</div>}
           
           <div className="mb-3">
-            <label htmlFor="email" className="form-label">Email address</label>
+            <label htmlFor="username" className="form-label">Username</label>
             <input
-              type="email"
+              type="text"
               className="form-control"
-              id="email"
-              name="email"
-              value={formData.email}
+              id="username"
+              name="username"
+              value={formData.username}
               onChange={handleChange}
               required
             />

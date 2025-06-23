@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ReviewModal from '../components/marketplace/ReviewModal';
+import ItemModal from '../components/marketplace/ItemModal';
+import DeleteConfirmation from '../components/marketplace/DeleteConfirmation';
 import api from '../services/api';
 
 const Profile = () => {
@@ -17,7 +20,19 @@ const Profile = () => {
   const [updateLoading, setUpdateLoading] = useState(false);
   const [updateError, setUpdateError] = useState('');
   const [userNames, setUserNames] = useState({}); // Cache for user names
+  const [categories, setCategories] = useState({}); // Categories for item editing
   
+  // Review modal states
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewModalMode, setReviewModalMode] = useState('create'); // 'create', 'edit', 'delete'
+  const [selectedReview, setSelectedReview] = useState(null);
+  
+  // Item modal states
+  const [showItemModal, setShowItemModal] = useState(false);
+  const [itemModalMode, setItemModalMode] = useState('create'); // 'create' or 'edit'
+  const [editingItem, setEditingItem] = useState(null);
+  const [deletingItem, setDeletingItem] = useState(null);
+
   useEffect(() => {
     // Check if user is logged in
     const storedUser = localStorage.getItem('user');
@@ -50,82 +65,94 @@ const Profile = () => {
     }
     
     // Fetch user data from API
-    const fetchUserData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Fetch detailed user profile
-        try {
-          const userProfile = await api.user.getProfile(userData.id);
-          setUser(prev => ({ ...prev, ...userProfile }));
-          setFormData({
-            username: userProfile.username || '',
-            full_name: userProfile.full_name || '',
-            email: userProfile.email || '',
-            bio: userProfile.bio || '',
-            country: userProfile.country || '',
-            city: userProfile.city || '',
-            phone_number: userProfile.phone_number || ''
-          });
-        } catch (err) {
-          console.error('Error fetching user profile:', err);
-          setError('Could not load your profile. Please try logging in again.');
-        }
-        
-        // Fetch user items with error handling
-        try {
-          const items = await api.user.getUserItems(userData.id);
-          setUserItems(items);
-        } catch (err) {
-          console.error('Error fetching user items:', err);
-          setUserItems([]);
-        }
-        
-        // Fetch favorite items with error handling
-        try {
-          const favorites = await api.user.getFavorites(userData.id);
-          setFavoriteItems(favorites);
-        } catch (err) {
-          console.error('Error fetching favorites:', err);
-          setFavoriteItems([]);
-        }
-        
-        // Fetch reviews with error handling
-        try {
-          const received = await api.user.getReceivedReviews(userData.id);
-          setReceivedReviews(received);
-          
-          // Fetch reviewer names for received reviews
-          const reviewerIds = [...new Set(received.map(review => review.reviewer_id))];
-          await fetchUserNames(reviewerIds);
-        } catch (err) {
-          console.error('Error fetching received reviews:', err);
-          setReceivedReviews([]);
-        }
-        
-        try {
-          const written = await api.user.getWrittenReviews(userData.id);
-          setWrittenReviews(written);
-          
-          // Fetch reviewee names for written reviews
-          const revieweeIds = [...new Set(written.map(review => review.reviewee_id))];
-          await fetchUserNames(revieweeIds);
-        } catch (err) {
-          console.error('Error fetching written reviews:', err);
-          setWrittenReviews([]);
-        }
-        
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        setError('Failed to load user data. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchUserData();
+    fetchUserData(userData);
   }, [navigate]);
+
+  const fetchUserData = async (userData) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Fetch categories first for item editing
+      try {
+        const categoriesData = await api.category.getAllCategories();
+        const categoriesMap = {};
+        categoriesData.forEach(category => {
+          categoriesMap[category.id] = category;
+        });
+        setCategories(categoriesMap);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+      
+      // Fetch detailed user profile
+      try {
+        const userProfile = await api.user.getProfile(userData.id);
+        setUser(prev => ({ ...prev, ...userProfile }));
+        setFormData({
+          username: userProfile.username || '',
+          full_name: userProfile.full_name || '',
+          email: userProfile.email || '',
+          bio: userProfile.bio || '',
+          country: userProfile.country || '',
+          city: userProfile.city || '',
+          phone_number: userProfile.phone_number || ''
+        });
+      } catch (err) {
+        console.error('Error fetching user profile:', err);
+        setError('Could not load your profile. Please try logging in again.');
+      }
+      
+      // Fetch user items with error handling
+      try {
+        const items = await api.user.getUserItems(userData.id);
+        setUserItems(items);
+      } catch (err) {
+        console.error('Error fetching user items:', err);
+        setUserItems([]);
+      }
+      
+      // Fetch favorite items with error handling
+      try {
+        const favorites = await api.user.getFavorites(userData.id);
+        setFavoriteItems(favorites);
+      } catch (err) {
+        console.error('Error fetching favorites:', err);
+        setFavoriteItems([]);
+      }
+      
+      // Fetch reviews with error handling
+      try {
+        const received = await api.user.getReceivedReviews(userData.id);
+        setReceivedReviews(received);
+        
+        // Fetch reviewer names for received reviews
+        const reviewerIds = [...new Set(received.map(review => review.reviewer_id))];
+        await fetchUserNames(reviewerIds);
+      } catch (err) {
+        console.error('Error fetching received reviews:', err);
+        setReceivedReviews([]);
+      }
+      
+      try {
+        const written = await api.user.getWrittenReviews(userData.id);
+        setWrittenReviews(written);
+        
+        // Fetch reviewee names for written reviews
+        const revieweeIds = [...new Set(written.map(review => review.reviewee_id))];
+        await fetchUserNames(revieweeIds);
+      } catch (err) {
+        console.error('Error fetching written reviews:', err);
+        setWrittenReviews([]);
+      }
+      
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      setError('Failed to load user data. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Function to fetch user names and cache them
   const fetchUserNames = async (userIds) => {
@@ -193,14 +220,14 @@ const Profile = () => {
         username: updatedUser.username,
         email: updatedUser.email,
         full_name: updatedUser.full_name,
-        bio: updatedUser.bio, // Make sure bio is included
+        bio: updatedUser.bio,
         country: updatedUser.country,
         city: updatedUser.city,
         phone_number: updatedUser.phone_number
       }));
       
       // Update local state with ALL fields from the response
-      setUser(updatedUser); // Use the complete response instead of merging
+      setUser(updatedUser);
       setEditMode(false);
       
       alert('Profile updated successfully!');
@@ -209,6 +236,88 @@ const Profile = () => {
       setUpdateError(error.message || 'Failed to update profile. Please try again.');
     } finally {
       setUpdateLoading(false);
+    }
+  };
+
+  // Item management functions
+  const handleEditItem = (item) => {
+    setEditingItem(item);
+    setItemModalMode('edit');
+    setShowItemModal(true);
+  };
+
+  const handleDeleteItem = (item) => {
+    setDeletingItem(item);
+  };
+
+  const handleItemSuccess = async (updatedItem) => {
+    // Refresh user items after update/create
+    try {
+      const items = await api.user.getUserItems(user.id);
+      setUserItems(items);
+      setEditingItem(null);
+    } catch (err) {
+      console.error('Error refreshing items:', err);
+    }
+  };
+
+  const handleItemDeleted = async () => {
+    // Refresh user items after deletion
+    try {
+      const items = await api.user.getUserItems(user.id);
+      setUserItems(items);
+      setDeletingItem(null);
+    } catch (err) {
+      console.error('Error refreshing items:', err);
+    }
+  };
+
+  const handleItemModalClose = () => {
+    setShowItemModal(false);
+    setEditingItem(null);
+    setItemModalMode('create');
+  };
+
+  // Review management functions
+  const handleEditReview = (review) => {
+    setSelectedReview(review);
+    setReviewModalMode('edit');
+    setShowReviewModal(true);
+  };
+
+  const handleDeleteReview = (review) => {
+    setSelectedReview(review);
+    setReviewModalMode('delete');
+    setShowReviewModal(true);
+  };
+
+  const handleReviewModalClose = () => {
+    setShowReviewModal(false);
+    setSelectedReview(null);
+    setReviewModalMode('create');
+  };
+
+  const handleReviewSubmitted = async () => {
+    // Refresh reviews after any operation
+    const userData = JSON.parse(localStorage.getItem('user'));
+    
+    try {
+      const written = await api.user.getWrittenReviews(userData.id);
+      setWrittenReviews(written);
+      
+      const received = await api.user.getReceivedReviews(userData.id);
+      setReceivedReviews(received);
+      
+      // Refresh user names for any new reviews
+      const allUserIds = [
+        ...new Set([
+          ...written.map(review => review.reviewee_id),
+          ...received.map(review => review.reviewer_id)
+        ])
+      ];
+      await fetchUserNames(allUserIds);
+    } catch (error) {
+      console.error('Error refreshing reviews:', error);
     }
   };
 
@@ -236,7 +345,7 @@ const Profile = () => {
   }
   
   if (!user) {
-    return null; // Will redirect in useEffect
+    return null;
   }
 
   return (
@@ -282,6 +391,7 @@ const Profile = () => {
         
         {/* Main content */}
         <div className="col-md-9">
+          {/* Profile section stays the same */}
           {activeTab === 'profile' && (
             <div className="card">
               <div className="card-header d-flex justify-content-between align-items-center">
@@ -304,6 +414,7 @@ const Profile = () => {
                 </button>
               </div>
               <div className="card-body">
+                {/* Profile edit form and display - keeping existing code */}
                 {editMode ? (
                   <form onSubmit={handleProfileUpdate}>
                     {updateError && <div className="alert alert-danger">{updateError}</div>}
@@ -425,7 +536,6 @@ const Profile = () => {
                 ) : (
                   <div className="row">
                     <div className="col-md-3 text-center mb-3">
-                      {/* Placeholder avatar */}
                       <div className="bg-light rounded-circle mx-auto" style={{width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
                         <i className="bi bi-person" style={{fontSize: '3rem'}}></i>
                       </div>
@@ -444,9 +554,23 @@ const Profile = () => {
             </div>
           )}
           
+          {/* Updated My Items section with edit/delete functionality */}
           {activeTab === 'myItems' && (
             <div className="card">
-              <div className="card-header">My Items</div>
+              <div className="card-header d-flex justify-content-between align-items-center">
+                <span>My Items</span>
+                <button 
+                  className="btn btn-primary btn-sm"
+                  onClick={() => {
+                    setItemModalMode('create');
+                    setEditingItem(null);
+                    setShowItemModal(true);
+                  }}
+                >
+                  <i className="bi bi-plus me-1"></i>
+                  Add New Item
+                </button>
+              </div>
               <div className="card-body">
                 {userItems.length > 0 ? (
                   <div className="row">
@@ -463,15 +587,33 @@ const Profile = () => {
                           ) : (
                             <div className="bg-light text-center p-4">No Image</div>
                           )}
-                          <div className="card-body">
+                          <div className="card-body d-flex flex-column">
                             <h5 className="card-title">{item.title}</h5>
                             <p className="card-text">${item.price}</p>
-                            <p className="card-text small">{item.description?.substring(0, 60) || 'No description'}</p>
-                            <div className="d-flex justify-content-between">
+                            <p className="card-text small flex-grow-1">{item.description?.substring(0, 60) || 'No description'}</p>
+                            <div className="d-flex justify-content-between align-items-center mb-2">
                               <span className={`badge ${item.sold ? 'bg-danger' : 'bg-success'}`}>
                                 {item.sold ? 'Sold' : 'Available'}
                               </span>
                               <span className="badge bg-secondary">{item.itemCondition}</span>
+                            </div>
+                            
+                            {/* Action buttons */}
+                            <div className="d-grid gap-2">
+                              <button 
+                                className="btn btn-sm btn-outline-primary"
+                                onClick={() => handleEditItem(item)}
+                              >
+                                <i className="bi bi-pencil me-1"></i>
+                                Edit Item
+                              </button>
+                              <button 
+                                className="btn btn-sm btn-outline-danger"
+                                onClick={() => handleDeleteItem(item)}
+                              >
+                                <i className="bi bi-trash me-1"></i>
+                                Delete Item
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -479,12 +621,26 @@ const Profile = () => {
                     ))}
                   </div>
                 ) : (
-                  <p>You haven't listed any items yet.</p>
+                  <div className="text-center py-4">
+                    <p>You haven't listed any items yet.</p>
+                    <button 
+                      className="btn btn-primary"
+                      onClick={() => {
+                        setItemModalMode('create');
+                        setEditingItem(null);
+                        setShowItemModal(true);
+                      }}
+                    >
+                      <i className="bi bi-plus me-1"></i>
+                      Create Your First Item
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
           )}
           
+          {/* Favorites section stays the same */}
           {activeTab === 'favorites' && (
             <div className="card">
               <div className="card-header">Favorite Items</div>
@@ -527,6 +683,7 @@ const Profile = () => {
             </div>
           )}
           
+          {/* Reviews sections stay the same */}
           {activeTab === 'receivedReviews' && (
             <div className="card">
               <div className="card-header">Reviews Received</div>
@@ -553,6 +710,7 @@ const Profile = () => {
             </div>
           )}
           
+          {/* Written Reviews section with edit/delete */}
           {activeTab === 'writtenReviews' && (
             <div className="card">
               <div className="card-header">Reviews Written</div>
@@ -561,14 +719,36 @@ const Profile = () => {
                   <div className="list-group">
                     {writtenReviews.map(review => (
                       <div key={review.id} className="list-group-item">
-                        <div className="d-flex justify-content-between">
-                          <div>
-                            <span className="badge bg-primary me-2">{review.rating}/5</span>
-                            <strong>For: {getUserDisplayName(review.reviewee_id)}</strong>
+                        <div className="d-flex justify-content-between align-items-start">
+                          <div className="flex-grow-1">
+                            <div className="d-flex justify-content-between align-items-center mb-2">
+                              <div>
+                                <span className="badge bg-primary me-2">{review.rating}/5</span>
+                                <strong>For: {getUserDisplayName(review.reviewee_id)}</strong>
+                              </div>
+                              <div className="d-flex gap-2">
+                                <button 
+                                  className="btn btn-sm btn-outline-primary"
+                                  onClick={() => handleEditReview(review)}
+                                  title="Edit Review"
+                                >
+                                  <i className="bi bi-pencil"></i>
+                                  <span className="ms-1">Edit</span>
+                                </button>
+                                <button 
+                                  className="btn btn-sm btn-outline-danger"
+                                  onClick={() => handleDeleteReview(review)}
+                                  title="Delete Review"
+                                >
+                                  <i className="bi bi-trash"></i>
+                                  <span className="ms-1">Delete</span>
+                                </button>
+                              </div>
+                            </div>
+                            <p className="mb-1">{review.comment}</p>
+                            <small className="text-muted">{new Date(review.date).toLocaleDateString()}</small>
                           </div>
-                          <small>{new Date(review.date).toLocaleDateString()}</small>
                         </div>
-                        <p className="mt-2 mb-0">{review.comment}</p>
                       </div>
                     ))}
                   </div>
@@ -580,6 +760,36 @@ const Profile = () => {
           )}
         </div>
       </div>
+
+      {/* Item Modal for Create/Edit */}
+      <ItemModal
+        show={showItemModal}
+        onHide={handleItemModalClose}
+        mode={itemModalMode}
+        item={editingItem}
+        categories={categories}
+        currentUser={user}
+        onSuccess={handleItemSuccess}
+      />
+
+      {/* Item Delete Confirmation */}
+      {deletingItem && (
+        <DeleteConfirmation
+          item={deletingItem}
+          onConfirm={handleItemDeleted}
+          onCancel={() => setDeletingItem(null)}
+        />
+      )}
+
+      {/* Review Modal for Edit/Delete */}
+      <ReviewModal
+        show={showReviewModal}
+        onHide={handleReviewModalClose}
+        mode={reviewModalMode}
+        reviewToEdit={selectedReview}
+        currentUser={user}
+        onReviewSubmitted={handleReviewSubmitted}
+      />
     </div>
   );
 };
