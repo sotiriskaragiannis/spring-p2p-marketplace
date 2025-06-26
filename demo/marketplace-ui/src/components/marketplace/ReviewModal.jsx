@@ -16,25 +16,53 @@ const ReviewModal = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [seller, setSeller] = useState(null);
+  const [sellerLoading, setSellerLoading] = useState(false);
 
   // Fetch seller information for create mode
   useEffect(() => {
     const fetchSellerInfo = async () => {
       if (mode === 'create' && item?.seller_id && !sellerInfo) {
+        setSellerLoading(true);
         try {
           const sellerData = await api.user.getProfile(item.seller_id);
           setSeller(sellerData);
         } catch (error) {
           console.error('Error fetching seller info:', error);
-          setSeller({ username: 'Unknown', full_name: 'Unknown User' });
+          setSeller({ 
+            username: 'Unknown', 
+            full_name: 'Unknown User',
+            city: null,
+            country: null,
+            bio: null
+          });
+        } finally {
+          setSellerLoading(false);
         }
       } else if (sellerInfo) {
         setSeller(sellerInfo);
+      } else if (mode === 'edit' && reviewToEdit?.reviewee_id) {
+        // For edit mode, fetch the reviewee information
+        setSellerLoading(true);
+        try {
+          const sellerData = await api.user.getProfile(reviewToEdit.reviewee_id);
+          setSeller(sellerData);
+        } catch (error) {
+          console.error('Error fetching reviewee info:', error);
+          setSeller({ 
+            username: 'Unknown', 
+            full_name: 'Unknown User',
+            city: null,
+            country: null,
+            bio: null
+          });
+        } finally {
+          setSellerLoading(false);
+        }
       }
     };
 
     fetchSellerInfo();
-  }, [item, mode, sellerInfo]);
+  }, [item, mode, sellerInfo, reviewToEdit]);
 
   // Initialize form with existing review data when editing
   useEffect(() => {
@@ -141,6 +169,7 @@ const ReviewModal = ({
     setRating(5);
     setComment('');
     setError('');
+    setSeller(null);
     onHide();
   };
 
@@ -185,11 +214,71 @@ const ReviewModal = ({
     }
   };
 
-  const getSellerDisplayName = () => {
-    if (seller) {
-      return `${seller.full_name} (@${seller.username})`;
+  const renderSellerInfo = () => {
+    if (sellerLoading) {
+      return (
+        <div className="text-center py-3">
+          <div className="spinner-border spinner-border-sm me-2"></div>
+          Loading seller information...
+        </div>
+      );
     }
-    return 'Loading...';
+
+    if (!seller) {
+      return (
+        <div className="text-center py-3 text-muted">
+          <i className="bi bi-person-x me-2"></i>
+          Seller information unavailable
+        </div>
+      );
+    }
+
+    return (
+      <div className="d-flex align-items-start">
+        <div className="me-3">
+          <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+               style={{ width: '60px', height: '60px', fontSize: '1.5rem' }}>
+            <i className="bi bi-person-fill"></i>
+          </div>
+        </div>
+        <div className="flex-grow-1">
+          <h5 className="mb-1">
+            {seller.full_name}
+            <span className="text-muted ms-2">(@{seller.username})</span>
+          </h5>
+          
+          {seller.city && seller.country && (
+            <p className="mb-1 text-muted">
+              <i className="bi bi-geo-alt me-1"></i>
+              {seller.city}, {seller.country}
+            </p>
+          )}
+          
+          {seller.phone_number && (
+            <p className="mb-1 text-muted">
+              <i className="bi bi-telephone me-1"></i>
+              {seller.phone_number}
+            </p>
+          )}
+          
+          {seller.email && (
+            <p className="mb-1 text-muted">
+              <i className="bi bi-envelope me-1"></i>
+              {seller.email}
+            </p>
+          )}
+          
+          {seller.bio && (
+            <div className="mt-2">
+              <small className="text-muted d-block mb-1">About this seller:</small>
+              <p className="mb-0 small bg-light p-2 rounded" style={{ fontStyle: 'italic' }}>
+                "{seller.bio}"
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -205,24 +294,39 @@ const ReviewModal = ({
             <div className="modal-body">
               {error && <div className="alert alert-danger">{error}</div>}
               
-              {/* Show context information */}
+              {/* Enhanced Seller Information Card */}
+              {(mode === 'create' || mode === 'edit') && (
+                <div className="card mb-4 border-primary">
+                  <div className="card-header bg-primary text-white">
+                    <h6 className="mb-0">
+                      <i className="bi bi-person-circle me-2"></i>
+                      {mode === 'create' ? 'You are reviewing this seller:' : 'You reviewed this person:'}
+                    </h6>
+                  </div>
+                  <div className="card-body">
+                    {renderSellerInfo()}
+                  </div>
+                </div>
+              )}
+              
+              {/* Show context information for item */}
               {mode === 'create' && item && (
                 <div className="card mb-3 bg-light">
                   <div className="card-body">
                     <h6 className="card-title mb-2">
-                      <i className="bi bi-info-circle me-2"></i>
-                      Review Context
+                      <i className="bi bi-tag me-2"></i>
+                      Item Being Reviewed
                     </h6>
-                    <div className="row">
-                      <div className="col-md-6">
-                        <p className="mb-1"><strong>Item:</strong> {item.title}</p>
+                    <div className="row align-items-center">
+                      <div className="col-md-8">
+                        <p className="mb-1"><strong>Title:</strong> {item.title}</p>
                         <p className="mb-1"><strong>Price:</strong> ${item.price}</p>
+                        <p className="mb-0"><strong>Condition:</strong> {item.itemCondition}</p>
                       </div>
-                      <div className="col-md-6">
-                        <p className="mb-1"><strong>Seller:</strong> {getSellerDisplayName()}</p>
-                        <p className="mb-0 text-muted small">
-                          Your review will be posted for this seller
-                        </p>
+                      <div className="col-md-4 text-end">
+                        <span className={`badge ${item.sold ? 'bg-success' : 'bg-warning'} fs-6`}>
+                          {item.sold ? 'SOLD' : 'AVAILABLE'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -235,6 +339,17 @@ const ReviewModal = ({
                     <i className="bi bi-exclamation-triangle me-2"></i>
                     Are you sure you want to delete this review?
                   </h6>
+                  
+                  {/* Show who the review was for */}
+                  <div className="card mb-3">
+                    <div className="card-header">
+                      <strong>Review for:</strong>
+                    </div>
+                    <div className="card-body">
+                      {renderSellerInfo()}
+                    </div>
+                  </div>
+                  
                   <div className="card">
                     <div className="card-body">
                       <div className="d-flex align-items-center mb-2">
@@ -290,7 +405,7 @@ const ReviewModal = ({
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
                       placeholder={mode === 'create' 
-                        ? `Share your experience with ${seller ? seller.full_name : 'this seller'}. How was the communication, item condition, delivery, etc.?`
+                        ? `Share your experience with ${seller?.full_name || 'this seller'}. How was the communication, item condition, delivery, etc.?`
                         : "Update your review..."
                       }
                       required
@@ -332,7 +447,7 @@ const ReviewModal = ({
               <button 
                 type="submit" 
                 className={`btn ${mode === 'delete' ? 'btn-danger' : 'btn-primary'}`}
-                disabled={loading || (mode === 'create' && (!currentUser?.id || !item?.seller_id))}
+                disabled={loading || sellerLoading || (mode === 'create' && (!currentUser?.id || !item?.seller_id))}
               >
                 {loading && <span className="spinner-border spinner-border-sm me-2"></span>}
                 {mode === 'delete' ? (
